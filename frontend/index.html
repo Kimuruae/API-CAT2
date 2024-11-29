@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        header {
+            background: #001730;
+            color: white;
+            padding: 1em;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #011830;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .product {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        .product:last-child {
+            border: none;
+        }
+        .product h3 {
+            margin: 0;
+        }
+        .product p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Product Management</h1>
+    </header>
+    <div class="container">
+        <form id="productForm">
+            <label for="product_name">Product Name</label>
+            <input type="text" id="product_name" name="product_name" required>
+
+            <label for="product_description">Product Description</label>
+            <textarea id="product_description" name="product_description" rows="4" required></textarea>
+
+            <label for="price">Price</label>
+            <input type="number" id="price" name="price" step="0.01" required>
+
+            <button type="submit">Add Product</button>
+        </form>
+
+        <div id="productList">
+            <h2>Product List</h2>
+        </div>
+    </div>
+    <script>
+        const API_URL = 'https://your-api-endpoint/products'; // Replace with your actual API endpoint
+
+        const productForm = document.getElementById('productForm');
+        const productList = document.getElementById('productList');
+
+        // Fetch and display products
+        async function fetchProducts() {
+            try {
+                const response = await fetch(API_URL);
+                const products = await response.json();
+                displayProducts(products);
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            }
+        }
+
+        // Display products
+        function displayProducts(products) {
+            productList.innerHTML = '<h2>Product List</h2>';
+            products.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'product';
+                productDiv.innerHTML = `
+                    <h3>${product.product_name}</h3>
+                    <p>${product.product_description}</p>
+                    <p><strong>Price:</strong> $${product.price.toFixed(2)}</p>
+                `;
+                productList.appendChild(productDiv);
+            });
+        }
+        // Add a new product
+        productForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const product = {
+                product_name: document.getElementById('product_name').value,
+                product_description: document.getElementById('product_description').value,
+                price: parseFloat(document.getElementById('price').value)
+            };
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(product)
+                });
+
+                if (response.ok) {
+                    productForm.reset();
+                    fetchProducts(); // Refresh the product list
+                } else {
+                    console.error('Error adding product:', await response.text());
+                }
+            } catch (error) {
+                console.error('Error adding product:', error);
+            }
+        });
+
+        // Initialize the app
+        fetchProducts();
+    </script>
+</body>
+</html>
